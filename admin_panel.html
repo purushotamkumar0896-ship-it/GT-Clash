@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>GT Clash · Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #0f0f1a;
+            min-height: 100vh;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            animation: slideIn 0.5s ease;
+        }
+
+        .admin-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .logout-admin {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .logout-admin:hover { transform: scale(1.05); background: #ff6b7c; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: pulse 0.3s ease; }
+
+        .stat-card h3 { color: #666; font-size: 0.9rem; margin-bottom: 10px; }
+        .stat-card .number { font-size: 2rem; font-weight: bold; color: #f57c00; }
+
+        .admin-section {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease;
+        }
+        .admin-section:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+
+        .admin-section h2 {
+            margin-bottom: 20px;
+            color: #1a1a2e;
+            border-left: 4px solid #f57c00;
+            padding-left: 15px;
+        }
+
+        .settings-form { display: flex; flex-direction: column; gap: 15px; }
+        .settings-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .settings-row label { width: 150px; font-weight: bold; }
+        .settings-row input, .settings-row select {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .settings-row input:focus { border-color: #f57c00; box-shadow: 0 0 5px rgba(245,124,0,0.3); }
+        .settings-row button {
+            background: #f57c00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .settings-row button:hover { transform: scale(1.05); background: #e65100; }
+
+        /* Game Boxes Upload */
+        .boxes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .box-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .box-item:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .box-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            background: #e0e0e0;
+        }
+        .box-item input { width: 100%; padding: 5px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; }
+
+        /* Users Table */
+        .users-table { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: bold; color: #333; }
+        .action-btn {
+            background: #f57c00;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 2px;
+            transition: all 0.3s ease;
+        }
+        .action-btn:hover { transform: scale(1.05); }
+        .action-btn.danger { background: #dc3545; }
+        .action-btn.success { background: #28a745; }
+
+        .transaction-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+        }
+        .transaction-item:hover { transform: translateX(5px); background: #e9ecef; }
+
+        /* Message Container */
+        .message-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+        .admin-message {
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .admin-message.error { background: #dc3545; }
+        .admin-message.info { background: #17a2b8; }
+
+        @media (max-width: 768px) {
+            .admin-container { padding: 10px; }
+            th, td { padding: 8px; font-size: 0.8rem; }
+            .settings-row label { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-container" id="adminPanel">
+    <div class="admin-header">
+        <h1>👑 GT CLASH · ADMIN PANEL</h1>
+        <button class="logout-admin" onclick="logoutAdmin()">🚪 Logout</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card"><h3>Total Users</h3><div class="number" id="totalUsers">0</div></div>
+        <div class="stat-card"><h3>Total Deposit</h3><div class="number" id="totalDeposit">₹0</div></div>
+        <div class="stat-card"><h3>Total Withdraw</h3><div class="number" id="totalWithdraw">₹0</div></div>
+        <div class="stat-card"><h3>Pending Withdraw</h3><div class="number" id="pendingWithdraw">0</div></div>
+    </div>
+
+    <!-- App Settings -->
+    <div class="admin-section">
+        <h2>⚙️ App Settings</h2>
+        <div class="settings-form">
+            <div class="settings-row"><label>🏠 App Name:</label><input type="text" id="appName"><button onclick="updateAppName()">Update</button></div>
+            <div class="settings-row"><label>🎨 Theme Color:</label><input type="color" id="themeColor"><button onclick="updateThemeColor()">Update</button></div>
+            <div class="settings-row"><label>🖼️ App Logo:</label><input type="file" id="appLogoUpload" accept="image/*"><button onclick="updateAppLogo()">Upload</button></div>
+            <div class="settings-row"><label>📢 Tagline:</label><input type="text" id="taglineText"><button onclick="updateTagline()">Update</button></div>
+            <div class="settings-row"><label>🎨 Background Color:</label><input type="color" id="bgColor"><button onclick="updateBgColor()">Update</button></div>
+        </div>
+    </div>
+
+    <!-- Game Boxes (10 boxes with image upload) -->
+    <div class="admin-section">
+        <h2>🎮 Game Boxes (10 Boxes - Image Upload)</h2>
+        <div class="boxes-grid" id="boxesGrid"></div>
+        <button class="action-btn" onclick="saveAllBoxes()" style="margin-top:15px; width:100%">💾 Save All Boxes</button>
+    </div>
+
+    <!-- Users List -->
+    <div class="admin-section">
+        <h2>📋 Registered Users</h2>
+        <div class="users-table">
+            <table id="usersTable">
+                <thead><tr><th>ID</th><th>Username</th><th>Gmail</th><th>Phone</th><th>Coins</th><th>Deposit</th><th>Withdraw</th><th>Action</th></tr></thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Deposit Requests -->
+    <div class="admin-section">
+        <h2>💰 Deposit Requests</h2>
+        <div id="depositList"></div>
+    </div>
+
+    <!-- Withdraw Requests -->
+    <div class="admin-section">
+        <h2>💸 Withdraw Requests</h2>
+        <div id="withdrawList"></div>
+    </div>
+</div>
+
+<!-- Message Container -->
+<div id="messageContainer" class="message-container"></div>
+
+<script>
+    // ========== DATA ==========
+    let users = [];
+    let deposits = [];
+    let withdraws = [];
+    let gameBoxes = [];
+    let appSettings = {
+        appName: 'GT Clash',
+        themeColor: '#f57c00',
+        logo: '',
+        tagline: '🎯 JOIN TOURNAMENTS · WIN CASH',
+        bgColor: '#ffffff'
+    };
+    let messageTimeouts = {};
+
+    function showMessage(msg, type = 'success') {
+        let container = document.getElementById('messageContainer');
+        let msgDiv = document.createElement('div');
+        msgDiv.className = `admin-message ${type}`;
+        msgDiv.innerText = msg;
+        container.appendChild(msgDiv);
+        
+        // Auto remove after 10 minutes (600000 ms)
+        let timeoutId = setTimeout(() => {
+            if (msgDiv) msgDiv.remove();
+        }, 600000);
+        
+        messageTimeouts[msg] = timeoutId;
+        
+        // Also remove after 10 seconds for new messages to not stack too much
+        setTimeout(() => {
+            if (msgDiv) msgDiv.remove();
+        }, 10000);
+    }
+
+    function loadData() {
+        let u = localStorage.getItem('gtclash_users');
+        users = u ? JSON.parse(u) : [];
+        let d = localStorage.getItem('gtclash_deposits');
+        deposits = d ? JSON.parse(d) : [];
+        let w = localStorage.getItem('gtclash_withdraws');
+        withdraws = w ? JSON.parse(w) : [];
+        let g = localStorage.getItem('gtclash_game_boxes');
+        gameBoxes = g ? JSON.parse(g) : Array(11).fill('https://via.placeholder.com/100?text=Game');
+        let s = localStorage.getItem('gtclash_app_settings');
+        if (s) appSettings = JSON.parse(s);
+    }
+
+    function saveData() {
+        localStorage.setItem('gtclash_users', JSON.stringify(users));
+        localStorage.setItem('gtclash_deposits', JSON.stringify(deposits));
+        localStorage.setItem('gtclash_withdraws', JSON.stringify(withdraws));
+        localStorage.setItem('gtclash_game_boxes', JSON.stringify(gameBoxes));
+        localStorage.setItem('gtclash_app_settings', JSON.stringify(appSettings));
+    }
+
+    function updateAdminUI() {
+        document.getElementById('totalUsers').innerText = users.length;
+        let totalDep = deposits.reduce((s, d) => s + d.amount, 0);
+        let totalWith = withdraws.reduce((s, w) => s + w.amount, 0);
+        document.getElementById('totalDeposit').innerText = '₹' + totalDep;
+        document.getElementById('totalWithdraw').innerText = '₹' + totalWith;
+        document.getElementById('pendingWithdraw').innerText = withdraws.filter(w => w.status !== 'approved').length;
+        
+        // Users Table
+        let tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = '';
+        users.forEach((user, idx) => {
+            let userDep = deposits.filter(d => d.userEmail === user.email).reduce((s, d) => s + d.amount, 0);
+            let userWith = withdraws.filter(w => w.userEmail === user.email && w.status === 'approved').reduce((s, w) => s + w.amount, 0);
+            let row = tbody.insertRow();
+            row.insertCell(0).innerText = idx + 1;
+            row.insertCell(1).innerText = user.username;
+            row.insertCell(2).innerText = user.email;
+            row.insertCell(3).innerText = user.phone;
+            row.insertCell(4).innerText = user.coins || 0;
+            row.insertCell(5).innerText = '₹' + userDep;
+            row.insertCell(6).innerText = '₹' + userWith;
+            row.insertCell(7).innerHTML = `
+                <button class="action-btn success" onclick="addCoins('${user.email}')">➕ Add Coins</button>
+                <button class="action-btn" onclick="removeCoins('${user.email}')">➖ Remove Coins</button>
+                <button class="action-btn danger" onclick="deleteUser('${user.email}')">🗑️ Delete</button>
+            `;
+        });
+        
+        // Deposit List
+        let depositDiv = document.getElementById('depositList');
+        depositDiv.innerHTML = deposits.length === 0 ? '<p>No deposits yet.</p>' : '';
+        deposits.slice().reverse().forEach(dep => {
+            let user = users.find(u => u.email === dep.userEmail);
+            depositDiv.innerHTML += `
+                <div class="transaction-item">
+                    <div><strong>${user ? user.username : dep.userEmail}</strong><br>💰 ₹${dep.amount}<br>📅 ${dep.date}</div>
+                    <button class="action-btn success" onclick="approveDeposit('${dep.id}')">✅ Approve</button>
+                    <button class="action-btn danger" onclick="deleteDeposit('${dep.id}')">❌ Delete</button>
+                </div>
+            `;
+        });
+        
+        // Withdraw List
+        let withdrawDiv = document.getElementById('withdrawList');
+        withdrawDiv.innerHTML = withdraws.length === 0 ? '<p>No withdraw requests.</p>' : '';
+        withdraws.slice().reverse().forEach(wd => {
+            let user = users.find(u => u.email === wd.userEmail);
+            withdrawDiv.innerHTML += `
+                <div class="transaction-item">
+                    <div><strong>${user ? user.username : wd.userEmail}</strong><br>💸 ₹${wd.amount}<br>📅 ${wd.date}<br>🏦 ${wd.upiId || 'UPI'}</div>
+                    ${wd.status !== 'approved' ? `<button class="action-btn success" onclick="approveWithdraw('${wd.id}')">✅ Approve</button>` : '<span style="color:green">Approved</span>'}
+                    <button class="action-btn danger" onclick="deleteWithdraw('${wd.id}')">❌ Delete</button>
+                </div>
+            `;
+        });
+        
+        // Game Boxes Grid
+        let boxesGrid = document.getElementById('boxesGrid');
+        boxesGrid.innerHTML = '';
+        for (let i = 1; i <= 11; i++) {
+            boxesGrid.innerHTML += `
+                <div class="box-item">
+                    <img id="boxImg${i}" class="box-preview" src="${gameBoxes[i-1] || 'https://via.placeholder.com/100?text=Game'}">
+                    <input type="file" id="boxFile${i}" accept="image/*" style="display:none">
+                    <button class="action-btn" onclick="uploadBoxImage(${i})">📷 Upload Image</button>
+                    <input type="text" id="boxLink${i}" placeholder="Game Link" value="${gameBoxes[i-1] || ''}">
+                </div>
+            `;
+        }
+        
+        // Load settings
+        document.getElementById('appName').value = appSettings.appName;
+        document.getElementById('themeColor').value = appSettings.themeColor;
+        document.getElementById('taglineText').value = appSettings.tagline;
+        document.getElementById('bgColor').value = appSettings.bgColor || '#ffffff';
+    }
+    
+    // Box Image Upload
+    function uploadBoxImage(index) {
+        let fileInput = document.getElementById(`boxFile${index}`);
+        fileInput.click();
+        fileInput.onchange = function(e) {
+            if (e.target.files && e.target.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.getElementById(`boxImg${index}`).src = ev.target.result;
+                    gameBoxes[index-1] = ev.target.result;
+                    saveData();
+                    showMessage(`Box ${index} image updated!`, 'success');
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        };
+    }
+    
+    function saveAllBoxes() {
+        for (let i = 1; i <= 11; i++) {
+            let link = document.getElementById(`boxLink${i}`).value;
+            if (link) gameBoxes[i-1] = link;
+        }
+        saveData();
+        showMessage('All game boxes saved!', 'success');
+    }
+    
+    // User Management
+    function addCoins(email) {
+        let amount = prompt('Enter amount to add (coins):');
+        if (amount && !isNaN(amount)) {
+            let user = users.find(u => u.email === email);
+            if (user) {
+                user.coins = (user.coins || 0) + parseInt(amount);
+                saveData();
+                showMessage(`Added ${amount} coins to ${user.username}`, 'success');
+                updateAdminUI();
+            }
+        }
+    }
+    
+    function removeCoins(email) {
+        let amount = prompt('Enter amount to remove (coins):');
+        if (amount && !isNaN(amount)) {
+            let user = users.find(u => u.email === email);
+            if (user) {
+                user.coins = Math.max(0, (user.coins || 0) - parseInt(amount));
+                saveData();
+                showMessage(`Removed ${amount} coins from ${user.username}`, 'info');
+                updateAdminUI();
+            }
+        }
+    }
+    
+    function deleteUser(email) {
+        if (confirm(`Delete user ${email}?`)) {
+            users = users.filter(u => u.email !== email);
+            saveData();
+            showMessage(`User ${email} deleted!`, 'error');
+            updateAdminUI();
+        }
+    }
+    
+    function approveDeposit(id) {
+        let dep = deposits.find(d => d.id == id);
+        if (dep) {
+            let user = users.find(u => u.email === dep.userEmail);
+            if (user) {
+                user.coins = (user.coins || 0) + dep.amount;
+                deposits = deposits.filter(d => d.id != id);
+                saveData();
+                showMessage(`Deposit of ₹${dep.amount} approved for ${user.username}!`, 'success');
+                updateAdminUI();
+            }
+        }
+    }
+    
+    function deleteDeposit(id) {
+        deposits = deposits.filter(d => d.id != id);
+        saveData();
+        showMessage('Deposit request deleted', 'info');
+        updateAdminUI();
+    }
+    
+    function approveWithdraw(id) {
+        let wd = withdraws.find(w => w.id == id);
+        if (wd) {
+            wd.status = 'approved';
+            saveData();
+            showMessage(`Withdraw of ₹${wd.amount} approved!`, 'success');
+            updateAdminUI();
+        }
+    }
+    
+    function deleteWithdraw(id) {
+        let wd = withdraws.find(w => w.id == id);
+        if (wd) {
+            let user = users.find(u => u.email === wd.userEmail);
+            if (user) user.coins = (user.coins || 0) + wd.amount;
+            withdraws = withdraws.filter(w => w.id != id);
+            saveData();
+            showMessage('Withdraw request deleted, coins refunded', 'info');
+            updateAdminUI();

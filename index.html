@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>GT Clash · Play & Earn</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        body {
+            background: white;
+            min-height: 100vh;
+        }
+
+        /* ANIMATED TAGLINE */
+        .tagline-container {
+            background: linear-gradient(90deg, #ff6b6b, #f57c00, #ffb74d, #f57c00, #ff6b6b);
+            background-size: 200% auto;
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            animation: shine 3s linear infinite;
+        }
+
+        @keyframes shine {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        /* HOME PAGE */
+        .home {
+            text-align: center;
+            padding: 3rem 1.5rem 8rem 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .home h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #d32f2f, #f57c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .home p {
+            font-size: 1.2rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: #fff8e7;
+            border-radius: 32px;
+            padding: 1.8rem;
+            border: 1px solid #ffe0b5;
+        }
+
+        .badge {
+            background: #2e7d32;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 60px;
+            display: inline-block;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        /* BOTTOM FIXED BUTTONS */
+        .btn-login-fixed, .btn-register-fixed {
+            position: fixed;
+            bottom: 25px;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: none;
+        }
+
+        .btn-login-fixed {
+            left: 20px;
+            background: #2e7d32;
+            color: white;
+        }
+
+        .btn-register-fixed {
+            right: 20px;
+            background: #f57c00;
+            color: white;
+        }
+
+        /* FULLSCREEN PAGES */
+        .page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        .form-box {
+            max-width: 420px;
+            width: 100%;
+            background: white;
+            border-radius: 48px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+
+        .form-box h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #1e2a3e;
+        }
+
+        .input {
+            margin-bottom: 1.2rem;
+        }
+
+        .input label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .input input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .submit-green { background: #2e7d32; }
+        .submit-orange { background: #f57c00; }
+
+        /* DASHBOARD */
+        .dashboard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .dashboard.active { display: flex; }
+
+        .dashboard-header {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h2 {
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #d32f2f, #f57c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .coin-btn {
+            background: #f57c00;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .dashboard-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 30px;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 40px;
+        }
+
+        .nav-btn.earn { color: #2e7d32; }
+        .nav-btn.game { color: #f57c00; background: #fff3e0; box-shadow: 0 0 0 2px #f57c00; }
+        .nav-btn.profile { color: #3498db; }
+
+        /* GAME BOXES */
+        .game-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .game-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .game-box {
+            background: #f0f0f0;
+            border-radius: 20px;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .game-box:hover { transform: scale(1.05); background: #e0e0e0; }
+
+        /* SOCIAL OPTIONS */
+        .social-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 350px;
+        }
+        .social-btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+        }
+        .btn-whatsapp { background: #25D366; }
+        .btn-youtube { background: #FF0000; }
+        .btn-telegram { background: #0088cc; }
+        .btn-instagram { background: #E4405F; }
+
+        /* WALLET MODAL */
+        .wallet-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .wallet-modal.active { display: flex; }
+        .wallet-box {
+            background: white;
+            border-radius: 40px;
+            padding: 2rem;
+            max-width: 450px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .amount-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        .amount-btn {
+            background: #f57c00;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .custom-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            margin: 10px 0;
+        }
+        .qr-code {
+            text-align: center;
+            padding: 20px;
+        }
+        .qr-code img {
+            width: 200px;
+            height: 200px;
+        }
+        .upi-id {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .success-msg {
+            text-align: center;
+            padding: 30px;
+            background: #d4edda;
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+        .success-msg h3 {
+            color: #155724;
+            margin-bottom: 15px;
+        }
+
+        /* PROFILE PANEL */
+        .profile-panel {
+            background: white;
+            border-radius: 30px;
+            padding: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+        .profile-panel h3 {
+            margin-bottom: 20px;
+            color: #1a1a2e;
+        }
+        .profile-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .profile-info p {
+            margin: 8px 0;
+        }
+        .profile-logout-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        @media (max-width: 550px) {
+            .game-box { width: 70px; height: 70px; }
+            .nav-btn { padding: 6px 12px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HOME PAGE -->
+<div id="homePage">
+    <div class="home">
+        <h1>🔥 GT CLASH</h1>
+        <p>⚡ Ya ek online free fire tournament app hai! Yaha paise earning kar sakte ho ⚡</p>
+        <div class="card">
+            <p>🎯 Pehle register karo, fir login karo!</p>
+            <div class="badge">💰 ₹5000+ given weekly 💰</div>
+        </div>
+    </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="page">
+    <div class="form-box">
+        <h2>🔐 Login</h2>
+        <form id="loginForm">
+            <div class="input"><label>📧 Gmail</label><input type="email" id="loginEmail" required></div>
+            <div class="input"><label>🔒 Password</label><input type="password" id="loginPassword" required></div>
+            <button type="submit" class="submit-btn submit-green">➡️ Login</button>
+        </form>
+        <div class="switch" style="margin-top:1rem">New user? <span onclick="showRegisterPage()" style="color:#f57c00">Create account</span></div>
+        <div class="switch"><span onclick="showHomePage()" style="color:#888">← Back</span></div>
+    </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div id="registerPage" class="page">
+    <div class="form-box">
+        <h2>📝 Register</h2>
+        <form id="registerForm">
+            <div class="input"><label>📞 Phone</label><input type="tel" id="regPhone" required></div>
+            <div class="input"><label>📧 Gmail</label><input type="email" id="regEmail" required></div>
+            <div class="input"><label>👤 Username</label><input type="text" id="regUsername" required></div>
+            <div class="input"><label>🔑 Password</label><input type="password" id="regPassword" required></div>
+            <button type="submit" class="submit-btn submit-orange">✅ Register</button>
+        </form>
+        <div class="switch" style="margin-top:1rem">Already have account? <span onclick="showLoginPage()" style="color:#f57c00">Login</span></div>
+        <div class="switch"><span onclick="showHomePage()" style="color:#888">← Back</span></div>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard">
+    <div class="tagline-container" id="tagline">🎯 JOIN TOURNAMENTS · WIN CASH</div>
+    <div class="dashboard-header">
+        <h2 id="appName">🏆 GT CLASH</h2>
+        <button class="coin-btn" onclick="openWallet()">💰 <span id="walletCoins">0</span></button>
+    </div>
+    <div class="dashboard-content" id="dashboardContent"></div>
+    <div class="bottom-nav">
+        <button class="nav-btn earn" onclick="showEarnOptions()">💰 EARN</button>
+        <button class="nav-btn game" onclick="showGameBoxes()">🎮 GAME</button>
+        <button class="nav-btn profile" onclick="showProfilePanel()">👤 PROFILE</button>
+    </div>
+</div>
+
+<!-- WALLET MODAL -->
+<div id="walletModal" class="wallet-modal">
+    <div class="wallet-box">
+        <h2 style="text-align:center">💰 My Wallet</h2>
+        <p style="text-align:center; font-size:2rem; font-weight:bold" id="modalCoins">0</p>
+        <div style="display:flex; gap:10px; margin:20px 0">
+            <button onclick="showDeposit()" style="flex:1; background:#2e7d32; color:white; border:none; padding:12px; border-radius:30px">💸 Deposit</button>
+            <button onclick="showWithdraw()" style="flex:1; background:#f57c00; color:white; border:none; padding:12px; border-radius:30px">💳 Withdraw</button>
+        </div>
+        <div id="walletActionArea"></div>
+        <button onclick="closeWallet()" style="width:100%; margin-top:15px; background:#ccc; border:none; padding:10px; border-radius:30px">Close</button>
+    </div>
+</div>
+
+<script>
+    // ========== DATABASE ==========
+    let users = [];
+    let deposits = [];
+    let withdraws = [];
+    let currentUser = null;
+
+    const UPI_ID = "9693908559@fam";
+
+    function loadData() {
+        let u = localStorage.getItem('gtclash_users');
+        users = u ? JSON.parse(u) : [];
+        let d = localStorage.getItem('gtclash_deposits');
+        deposits = d ? JSON.parse(d) : [];
+        let w = localStorage.getItem('gtclash_withdraws');
+        withdraws = w ? JSON.parse(w) : [];
+    }
+
+    function saveData() {
+        localStorage.setItem('gtclash_users', JSON.stringify(users));
+        localStorage.setItem('gtclash_deposits', JSON.stringify(deposits));
+        localStorage.setItem('gtclash_withdraws', JSON.stringify(withdraws));
+    }
+
+    function addAdminMessage(msg, userEmail) {
+        let msgs = JSON.parse(localStorage.getItem('gtclash_admin_messages') || '[]');
+        msgs.push({ message: msg, date: new Date().toLocaleString(), userEmail: userEmail });
+        localStorage.setItem('gtclash_admin_messages', JSON.stringify(msgs));
+    }
+
+    // User functions
+    function registerUser(phone, email, username, password) {
+        if (users.find(u => u.email === email)) return false;
+        users.push({ phone, email, username, password, coins: 0, joinDate: new Date().toLocaleString() });
+        saveData();
+        addAdminMessage(`New user registered: ${username} (${email})`, email);
+        return true;
+    }
+
+    function loginUser(email, password) {
+        let user = users.find(u => u.email === email && u.password === password);
+        if (user) {
+            currentUser = user;
+            localStorage.setItem('gtclash_current', JSON.stringify(currentUser));
+            return true;
+        }
+        return false;
+    }
+
+    function updateCurrentUser() {
+        if (currentUser) {
+            let found = users.find(u => u.email === currentUser.email);
+            if (found) currentUser = found;
+            localStorage.setItem('gtclash_current', JSON.stringify(currentUser));
+            document.getElementById('walletCoins').innerText = currentUser.coins;
+        }
+    }
+
+    // Withdraw request
+    function requestWithdraw(email, amount, upiId) {
+        let user = users.find(u => u.email === email);
+        if (user && user.coins >= amount && amount >= 50) {
+            user.coins -= amount;
+            withdraws.push({ id: Date.now(), userEmail: email, amount: amount, upiId: upiId, date: new Date().toLocaleString() });
+            saveData();
+            updateCurrentUser();
+            addAdminMessage(`💸 WITHDRAW REQUEST: ₹${amount} to ${upiId} from ${email}`, email);
+            return true;
+        }
+        return false;
+    }
+
+    // UI Functions
+    function showHomePage() { document.getElementById('homePage').style.display = 'block'; document.getElementById('loginPage').classList.remove('active'); document.getElementById('registerPage').classList.remove('active'); document.getElementById('dashboard').classList.remove('active'); }
+    function showLoginPage() { document.getElementById('homePage').style.display = 'none'; document.getElementById('loginPage').classList.add('active'); document.getElementById('registerPage').classList.remove('active'); }
+    function showRegisterPage() { document.getElementById('homePage').style.display = 'none'; document.getElementById('registerPage').classList.add('active'); document.getElementById('loginPage').classList.remove('active'); }
+    
+    function showDashboard() {
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById('loginPage').classList.remove('active');
+        document.getElementById('registerPage').classList.remove('active');
+        document.getElementById('dashboard').classList.add('active');
+        document.getElementById('walletCoins').innerText = currentUser.coins;
+        showEmpty();
+    }
+
+    function logout() {
+        currentUser = null;
+        localStorage.removeItem('gtclash_current');
+        showHomePage();
+    }
+
+    function showEarnOptions() {
+        document.getElementById('dashboardContent').innerHTML = `
+            <div class="social-options">
+                <button class="social-btn btn-whatsapp" onclick="window.open('https://whatsapp.com/channel/0029Vb8FPCh0AgWEhG9ESl3R','_blank')">📱 WhatsApp Channel - Join →</button>
+                <button class="social-btn btn-youtube" onclick="window.open('https://youtube.com/@ng_gaming20','_blank')">▶️ YouTube - Subscribe →</button>
+                <button class="social-btn btn-telegram" onclick="window.open('https://t.me/purushotamkumar201120','_blank')">✈️ Telegram - Join →</button>
+                <button class="social-btn btn-instagram" onclick="window.open('https://www.instagram.com/_.obito.20.uchiha._','_blank')">📸 Instagram - Follow →</button>
+            </div>
+        `;
+    }
+
+    function showGameBoxes() {
+        let links = JSON.parse(localStorage.getItem('gtclash_game_links') || '["https://example.com/1","https://example.com/2","https://example.com/3","https://example.com/4","https://example.com/5","https://example.com/6","https://example.com/7","https://example.com/8","https://example.com/9","https://example.com/10","https://example.com/11"]');
+        document.getElementById('dashboardContent').innerHTML = `
+            <div class="game-container">
+                <div class="game-row"><div class="game-box" onclick="window.open('${links[0]}','_blank')"></div><div class="game-box" onclick="window.open('${links[1]}','_blank')"></div><div class="game-box" onclick="window.open('${links[2]}','_blank')"></div></div>
+                <div class="game-row"><div class="game-bo
